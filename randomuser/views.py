@@ -5,7 +5,7 @@ from datetime import datetime
 from django.contrib import messages
 
 
-def index(request):
+def index_old(request):
     # if the request method is a post
     if request.method == 'POST':
         # get the search term and location
@@ -72,12 +72,12 @@ def index(request):
                 # Append the user details dictionary to the user_list
                 user_list.append(user_details)
 
-            # Create a context dictionary with the user_list and render the 'index.html' template
+            # Create a context dictionary with the user_list and render the 'index2.html' template
             context = {'users': user_list}
-            return render(request, 'randomuser/index.html', context)
+            return render(request, 'randomuser/index2.html', context)
 
     # all other cases, just render the page without sending/passing any context to the template
-    return render(request, 'randomuser/index.html')
+    return render(request, 'randomuser/index2.html')
 
 
 def get_random_users(number_of_users, gender, nationality):
@@ -111,4 +111,176 @@ def get_random_users(number_of_users, gender, nationality):
         return None
 
 
+
+def index(request):
+    # if the request method is a post
+    if request.method == 'POST':
+        # get the search term and location
+        # number_of_users = request.POST['number-of-users']
+        # gender = request.POST['gender']
+
+        # later change the form and the words used here for the query request...
+        events = request.POST['events']
+        city = request.POST['city']
+
+        # Check if either number_of_users or gender is empty
+        # if not number_of_users or not gender:
+        #     # Set up an error message using Django's message utility to inform the user
+        #     messages.info(request, 'Both number of users and gender are required fields.')
+        #     # redirect user to the index page
+        #     return redirect('randomuser-index')
+        #     # Add code to handle or display the error_message as needed.
+
+        # Construct the URL with parameters
+        # url = "https://randomuser.me/api/"
+
+        # The query parameters will be appended to the url such as https://randomuser.me/api/?results=5&gender=female&nat=us
+        # params = {
+        #     "results": number_of_users,
+        #     "gender": gender,
+        #     "nat": nationality
+        # }
+
+        # params = {
+        #     "results": number_of_users,
+        #     "gender": gender,
+        #     "nat": nationality
+        # }
+
+        # url = "https://app.ticketmaster.com/discovery/v2/events.json"
+        # # apikey = 'BSQwvGEqBVyuq8qtKajfgDTwfuufWVUX'
+        # apikey = 'BSQwvGEqBVyuq8qtKajfgDTwfuufWVUX'
+        #
+        # params = {
+        #     "apikey": apikey,
+        #     "city" : city,
+        #     "classificationName": events
+        # }
+        #
+        # # Send a GET request to the specified URL with parameters
+        # response = requests.get(url, params=params)
+        #
+        #
+        # # Parse the JSON data from the response
+        # total_events = response.json()
+
+
+        apikey = 'OFYGvXGLUFanaijTT1jpItQsJ5Ayf3c8'
+        url = "https://app.ticketmaster.com/discovery/v2/events.json"
+        params = {
+            "apikey": apikey,
+            "classificationName": events,
+            "city": city,
+            "sort": "date,asc",
+        }
+        ### response = requests.get(url, params=params)
+        ### response = requests.post(url, params=params)
+        ### response = requests.get('https://app.ticketmaster.com/discovery/v2/events.json?apikey=OFYGvXGLUFanaijTT1jpItQsJ5Ayf3c8')
+        ### response = requests.get('https://app.ticketmaster.com/discovery/v2/events.json?apikey=OFYGvXGLUFanaijTT1jpItQsJ5Ayf3c8' , params=params)
+
+        # print(request)
+        # return JsonResponse({"value": request })
+
+        ### response = requests.get(url, params=params) ############# get or post???
+        response = requests.get(url, params=params)
+        ### response = requests.get(url, params=params)
+
+        total_events = response.json()
+
+
+        ### now PARSE IT!!!
+        event_list = []
+
+        for event in total_events['_embedded']['events']:
+            event_name = event['name']
+            ticket_link = event['url']
+            event_id = event['id']
+            image_url = event['images'[0]['url']]
+            venue_name = event['_embedded']['venues'][0]['name']
+            venue_address = event['_embedded']['venues'][0]['address']['line1']
+            venue_city = event['_embedded']['venues'][0]['city']['name']
+            venue_state = event['_embedded']['venues'][0]['state']['name']
+            event_datetime = event['dates']['start']['dateTime']
+            event_item = {
+                'eventName': event_name,
+                'ticketLink': ticket_link,
+                'eventID': event_id,
+                'imageUrl': image_url,
+                'venueName': venue_name,
+                'venueAddress': venue_address,
+                'venueCity': venue_city,
+                'venueState': venue_state,
+                'eventDate': event_datetime,
+                'eventTime': event_datetime,
+            }
+            event_list.append(event_item)
+
+        context = {'events': event_list}
+        # return render(request, 'ticketmaster.html', context)
+        return render(request, 'index.html', context)
+
+        # call get_random_users function() to get the data from the API
+        # random_female_users = get_random_users(number_of_users, gender, nationality='us')
+        #
+        # # If the request to fetch data from randomuser was unsuccessful or returned None
+        # if random_female_users is None:
+        #     # Set up an error message using Django's message utility to inform the user
+        #     messages.info(request, 'The server encountered an issue while fetching data. Please try again later.')
+        #     # redirect user to the index page
+        #     return redirect('events-index')
+        #
+        # else:
+        #     # print the response for testing purpose (open "Run" at the bottom to see what is printed)
+        #     print(random_female_users)
+        #     # Store each user's information in a variable
+        #     users = random_female_users['results']
+
+
+
+    # if the request method is not post
+    # all other cases, just render the page without sending/passing any context to the template
+    return render(request, 'randomuser/index.html')
+
+# def get_events(number_of_users, gender, nationality):
+#     try:
+#         # Construct the URL with parameters
+#         def get_random_users(number_of_users, gender, nationality):
+#             try:
+#                 # Construct the URL with parameters
+#                 url = "https://randomuser.me/api/"
+#
+#                 # The query parameters will be appended to the url such as https://randomuser.me/api/?results=5&gender=female&nat=us
+#                 params = {
+#                     "results": number_of_users,
+#                     "gender": gender,
+#                     "nat": nationality
+#                 }
+#
+#                 # Send a GET request to the specified URL with parameters
+#                 response = requests.get(url, params=params)
+#
+#                 # Raise an exception for 4xx and 5xx status codes
+#                 response.raise_for_status()
+#
+#                 # Parse the JSON data from the response
+#                 data = response.json()
+#
+#                 # Return the parsed data
+#                 return data
+#             except requests.exceptions.RequestException as e:
+#                 # Handle request exceptions (e.g., network issues, timeouts)
+#                 print(f"Request failed: {e}")
+#
+#                 # Return None to indicate failure
+#                 return None
+#
+#         # Return the parsed data
+#         return data
+#     except requests.exceptions.RequestException as e:
+#         # Handle request exceptions (e.g., network issues, timeouts)
+#         print(f"Request failed: {e}")
+#
+#         # Return None to indicate failure
+#         return None
+#
 

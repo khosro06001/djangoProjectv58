@@ -21,4 +21,5 @@ from randomuser import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('randomuser/', views.index, name='randomuser-index'),
+    path('', views.index, name='events-index'),
 ]
